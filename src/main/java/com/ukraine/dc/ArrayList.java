@@ -1,7 +1,5 @@
 package com.ukraine.dc;
 
-import com.ukraine.dc.list.List;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.StringJoiner;
@@ -11,10 +9,9 @@ import java.util.StringJoiner;
  *
  * @param <T> the data type
  */
-public class ArrayList<T> implements List<T> {
+public class ArrayList<T> extends AbstractList<T> {
     private static final int DEFAULT_CAPACITY = 5;
     private double capacity = DEFAULT_CAPACITY;
-    private int size;
     private T[] array;
 
     public ArrayList() {
@@ -44,7 +41,7 @@ public class ArrayList<T> implements List<T> {
      */
     @Override
     public void add(int index, T data) {
-        checkIndex(index);
+        validateIndex(index);
         array = initArray(array);
         if (size == array.length) {
             expandArray();
@@ -62,7 +59,7 @@ public class ArrayList<T> implements List<T> {
      */
     @Override
     public T remove(int index) {
-        checkIndex(index);
+        validateIndex(index);
         T prevValue = array[index];
         System.arraycopy(array, index + 1, array, index, size - index - 1);
         array[index] = null;
@@ -78,7 +75,7 @@ public class ArrayList<T> implements List<T> {
      */
     @Override
     public T get(int index) {
-        checkIndex(index);
+        validateIndex(index);
         return array[index];
     }
 
@@ -86,12 +83,12 @@ public class ArrayList<T> implements List<T> {
      * Sets the new value by index and return the previous one.
      *
      * @param index the index
-     * @param data the data
+     * @param data  the data
      * @return the data type
      */
     @Override
     public T set(int index, T data) {
-        checkIndex(index);
+        validateIndex(index);
         T prevValue = array[index];
         array[index] = data;
         return prevValue;
@@ -197,12 +194,6 @@ public class ArrayList<T> implements List<T> {
             return (T[]) new Object[(int) capacity];
         }
         return array;
-    }
-
-    private void checkIndex(int index) {
-        if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
-        }
     }
 
     /**
