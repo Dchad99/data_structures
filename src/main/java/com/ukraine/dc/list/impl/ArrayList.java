@@ -71,8 +71,8 @@ public class ArrayList<T> extends AbstractList<T> {
         validateIndex(index);
         T prevValue = array[index];
         System.arraycopy(array, index + 1, array, index, size - index - 1);
-        array[index] = null;
         size--;
+        array[size] = null;
         return prevValue;
     }
 
