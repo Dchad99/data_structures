@@ -4,6 +4,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static com.ukraine.dc.util.Constants.*;
+import static java.lang.String.format;
+
 /**
  * The type HashMap.
  *
@@ -79,7 +82,7 @@ public class HashMap<K, V> implements Map<K, V> {
         Entry<K, V> entry = buckets[index];
 
         if (entry == null) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException(format(DATA_IS_NOT_PRESENT, key));
         } else {
             while (entry != null) {
                 if (key.equals(entry.key)) {
@@ -125,7 +128,7 @@ public class HashMap<K, V> implements Map<K, V> {
         Entry<K, V> prev = null;
 
         if (entry == null) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException(format(DATA_IS_NOT_PRESENT, key));
         }
 
         while (entry != null) {
@@ -270,7 +273,7 @@ public class HashMap<K, V> implements Map<K, V> {
                 entry = current.next;
                 return current;
             }
-            throw new NoSuchElementException();
+            throw new NoSuchElementException(HAS_NOT_NEXT_ELEMENT);
         }
 
         /**
@@ -279,7 +282,7 @@ public class HashMap<K, V> implements Map<K, V> {
         @Override
         public void remove() {
             if (!isNextInvoked) {
-                throw new IllegalStateException();
+                throw new IllegalStateException(ITERATOR_INCORRECT);
             }
             Entry<K, V> removed = buckets[index - 1];
             Entry<K, V> prev = null;

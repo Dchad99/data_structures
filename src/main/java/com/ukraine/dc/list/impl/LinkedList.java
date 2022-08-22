@@ -3,6 +3,7 @@ package com.ukraine.dc.list.impl;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import static com.ukraine.dc.util.Constants.HAS_NOT_NEXT_ELEMENT;
 import static com.ukraine.dc.util.Constants.ITERATOR_INCORRECT;
 
 /**
@@ -272,7 +273,7 @@ public class LinkedList<T> extends AbstractList<T> {
                 isNextInvoked = true;
                 return get(index++);
             }
-            throw new NoSuchElementException();
+            throw new NoSuchElementException(HAS_NOT_NEXT_ELEMENT);
         }
 
         /**
