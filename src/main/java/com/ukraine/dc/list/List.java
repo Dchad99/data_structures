@@ -2,6 +2,11 @@ package com.ukraine.dc.list;
 
 import java.util.Iterator;
 
+/**
+ * The List interface.
+ *
+ * @param <T> the data type
+ */
 public interface List<T> extends Iterable<T> {
 
     void add(T data);

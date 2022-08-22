@@ -1,8 +1,9 @@
-package com.ukraine.dc;
+package com.ukraine.dc.list.impl;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.StringJoiner;
+
+import static com.ukraine.dc.util.Constants.ITERATOR_INCORRECT;
 
 /**
  * The ArrayList.
@@ -14,10 +15,18 @@ public class ArrayList<T> extends AbstractList<T> {
     private double capacity = DEFAULT_CAPACITY;
     private T[] array;
 
+    /**
+     * Initialize ArrayList with default capacity.
+     */
     public ArrayList() {
         this(DEFAULT_CAPACITY);
     }
 
+    /**
+     * Initialize ArrayList with custom capacity.
+     *
+     * @param capacity the capacity
+     */
     public ArrayList(int capacity) {
         array = (T[]) new Object[capacity];
     }
@@ -46,7 +55,7 @@ public class ArrayList<T> extends AbstractList<T> {
         if (size == array.length) {
             expandArray();
         }
-        System.arraycopy(array, 0, array, index + 1, size - index);
+        System.arraycopy(array, index, array, index + 1, size - index);
         array[index] = data;
         size++;
     }
@@ -202,11 +211,7 @@ public class ArrayList<T> extends AbstractList<T> {
      * @return the String value
      */
     public String toString() {
-        StringJoiner joiner = new StringJoiner(", ", "[", "]");
-        for (int i = 0; i < size; i++) {
-            joiner.add(array[i].toString());
-        }
-        return joiner.toString();
+        return super.toString(this);
     }
 
     /**
@@ -224,6 +229,7 @@ public class ArrayList<T> extends AbstractList<T> {
      */
     public class MyIterator implements Iterator<T> {
         private int index;
+        private boolean isNextInvoked;
 
         /**
          * The method checks if collection has one more element.
@@ -243,6 +249,7 @@ public class ArrayList<T> extends AbstractList<T> {
         @Override
         public T next() {
             if (hasNext()) {
+                isNextInvoked = true;
                 return array[index++];
             }
             throw new NoSuchElementException();
@@ -253,15 +260,11 @@ public class ArrayList<T> extends AbstractList<T> {
          */
         @Override
         public void remove() {
-            int removed = index - 1;
-            for (int i = removed; i < size; i++) {
-                array[removed++] = array[i + 1];
-                if (removed == -1) {
-                    throw new ArrayIndexOutOfBoundsException();
-                }
+            if (!isNextInvoked) {
+                throw new IllegalStateException(ITERATOR_INCORRECT);
             }
-            index--;
-            size--;
+            ArrayList.this.remove(--index);
+            isNextInvoked = false;
         }
     }
 }
