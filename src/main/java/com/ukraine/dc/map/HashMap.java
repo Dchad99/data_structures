@@ -43,31 +43,7 @@ public class HashMap<K, V> implements Map<K, V> {
         if (size >= buckets.length * 0.75) {
             buckets = expandBucketsSize();
         }
-        int index = identifyBucketIndex(key);
-        Entry<K, V> entry = buckets[index];
-        Entry<K, V> prevEntry = null;
-
-        while (entry != null) {
-            if (entry.getKey() == null) {
-                entry.setValue(value);
-                return value;
-            } else if (entry.getKey().equals(key)) {
-                V prevValue = entry.getValue();
-                entry.setValue(value);
-                return prevValue;
-            }
-            prevEntry = entry;
-            entry = entry.next;
-        }
-        if (prevEntry != null) {
-            prevEntry.next = new Entry<>(key, value);
-            size++;
-            return value;
-        }
-        entry = new Entry<>(key, value);
-        buckets[index] = entry;
-        size++;
-        return value;
+        return putValues(buckets, null, key, value);
     }
 
     /**
@@ -136,53 +112,97 @@ public class HashMap<K, V> implements Map<K, V> {
         int index = identifyBucketIndex(key);
         Entry<K, V> entry = buckets[index];
         if (!isEmpty() || entry == null) {
-            Iterator<Map.Entry<K, V>> iterator = this.iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<K, V> item = iterator.next();
-                if (key == null) {
+            while (entry != null) {
+                if (Objects.equals(key, entry.getKey())) {
+                    V removed = entry.getValue();
                     size--;
-                    return item.getValue();
-                } else if (key.equals(item.getKey())) {
-                    V removed = item.getValue();
-                    iterator.remove();
                     return removed;
                 }
+                entry = entry.next;
             }
         }
         return null;
     }
 
+    /**
+     * Clear the collection.
+     */
     public void clear() {
         buckets = new Entry[DEFAULT_CAPACITY];
         size = 0;
     }
 
-    public Entry<K,V>[] getBuckets() {
-        return buckets;
-    }
-
-    @Override
-    public String toString() {
-        return "HashMap{" +
-                "buckets=" + Arrays.toString(buckets) +
-                ", size=" + size +
-                '}';
-    }
-
-    private Entry<K,V>[] expandBucketsSize() {
+    /**
+     * Expand bucket size and shrink the collection.
+     *
+     * @return the newBuckets array.
+     */
+    private Entry<K, V>[] expandBucketsSize() {
         var iterator = this.iterator();
-        var newMap = new HashMap(buckets.length * 2);
+        var newMap = new Entry[buckets.length * 2];
         while (iterator.hasNext()) {
             var item = iterator.next();
-            newMap.put(item.getKey(), item.getValue());
+            putValues(buckets, newMap, item.getKey(), item.getValue());
         }
-        return newMap.getBuckets();
+        return newMap;
     }
 
+    /**
+     * The method stands for the enriching collection with new elements.
+     *
+     * @param buckets    the buckets
+     * @param newBuckets the newBuckets
+     * @param key        the key
+     * @param value      the value
+     * @return the value
+     */
+    private V putValues(Entry<K, V>[] buckets, Entry<K, V>[] newBuckets, K key, V value) {
+        int index = identifyBucketIndex(key);
+        Entry<K, V> entry = buckets[index];
+        Entry<K, V> prevEntry = null;
+
+        while (entry != null) {
+            if (Objects.equals(entry.getKey(), key)) {
+                V prevValue = entry.getValue();
+                entry.setValue(value);
+                return prevValue;
+            }
+            prevEntry = entry;
+            entry = entry.next;
+        }
+        if (prevEntry != null) {
+            prevEntry.next = new Entry<>(key, value);
+            size++;
+            return value;
+        }
+        if (newBuckets != null) {
+            entry = new Entry<>(key, value);
+            newBuckets[index] = entry;
+            size++;
+            return value;
+        }
+        entry = new Entry<>(key, value);
+        buckets[index] = entry;
+        size++;
+        return value;
+    }
+
+    /**
+     * The method stands for the logic of identifying the bucket index.
+     *
+     * @param key the key
+     * @return int value
+     */
     private int identifyBucketIndex(K key) {
         return key == null ? 0 : Math.abs(key.hashCode() % buckets.length);
     }
 
+    /**
+     * The type Entry.
+     *
+     * @param <K> the key
+     * @param <V> the value
+     */
     private static class Entry<K, V> implements Map.Entry<K, V> {
         private final K key;
         private V value;

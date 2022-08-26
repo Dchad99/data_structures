@@ -158,7 +158,6 @@ class HashMapTest {
 
         map.remove("key2");
         assertEquals(0, map.size());
-
     }
 
     @Test
@@ -289,8 +288,7 @@ class HashMapTest {
         for (int i = 0; i < 120; i++) {
             map.put(String.valueOf(i), String.valueOf(i));
         }
-        map.put(null, null);
-        assertEquals(121, map.size());
+        assertEquals(120, map.size());
     }
 
 }
