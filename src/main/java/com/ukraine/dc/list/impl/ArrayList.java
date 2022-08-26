@@ -1,10 +1,8 @@
 package com.ukraine.dc.list.impl;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import static com.ukraine.dc.util.Constants.HAS_NOT_NEXT_ELEMENT;
-import static com.ukraine.dc.util.Constants.ITERATOR_INCORRECT;
 
 /**
  * The ArrayList.
@@ -12,15 +10,14 @@ import static com.ukraine.dc.util.Constants.ITERATOR_INCORRECT;
  * @param <T> the data type
  */
 public class ArrayList<T> extends AbstractList<T> {
-    private static final int DEFAULT_CAPACITY = 5;
-    private double capacity = DEFAULT_CAPACITY;
+    private static final int INITIAL_CAPACITY = 5;
     private T[] array;
 
     /**
      * Initialize ArrayList with default capacity.
      */
     public ArrayList() {
-        this(DEFAULT_CAPACITY);
+        this(INITIAL_CAPACITY);
     }
 
     /**
@@ -33,26 +30,14 @@ public class ArrayList<T> extends AbstractList<T> {
     }
 
     /**
-     * Add data to the end of the list.
-     *
-     * @param data the data.
-     */
-    @Override
-    public void add(T data) {
-        array = initArray(array);
-        add(size, data);
-    }
-
-    /**
      * Enrich collection via adding data by index into the collection.
      *
      * @param index th index
      * @param data  the data
      */
     @Override
-    public void add(int index, T data) {
-        validateIndex(index);
-        array = initArray(array);
+    public void add(T data, int index) {
+        validateIndexOnAdd(index);
         if (size == array.length) {
             expandArray();
         }
@@ -81,7 +66,7 @@ public class ArrayList<T> extends AbstractList<T> {
      * Gets the data by its id.
      *
      * @param index the index
-     * @return th datatype
+     * @return the datatype
      */
     @Override
     public T get(int index) {
@@ -97,31 +82,11 @@ public class ArrayList<T> extends AbstractList<T> {
      * @return the data type
      */
     @Override
-    public T set(int index, T data) {
+    public T set(T data, int index) {
         validateIndex(index);
         T prevValue = array[index];
         array[index] = data;
         return prevValue;
-    }
-
-    /**
-     * The method checks if collection is empty or no, returns boolean value.
-     *
-     * @return the boolean value
-     */
-    @Override
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    /**
-     * The method returns collection actual size.
-     *
-     * @return the data type
-     */
-    @Override
-    public int size() {
-        return size;
     }
 
     /**
@@ -131,17 +96,6 @@ public class ArrayList<T> extends AbstractList<T> {
     public void clear() {
         size = 0;
         array = null;
-    }
-
-    /**
-     * Went through the collection and try to find the searching element.
-     *
-     * @param value the value
-     * @return the boolean value
-     */
-    @Override
-    public boolean contains(T value) {
-        return indexOf(value) != -1;
     }
 
     /**
@@ -193,26 +147,17 @@ public class ArrayList<T> extends AbstractList<T> {
     }
 
     private void expandArray() {
-        capacity = capacity * 1.5;
-        T[] newArray = (T[]) new Object[(int) capacity];
+        int newCapacity = array.length * 2;
+        T[] newArray = (T[]) new Object[(int) newCapacity];
         System.arraycopy(array, 0, newArray, 0, size);
         array = newArray;
     }
 
-    private T[] initArray(T[] array) {
-        if (array == null) {
-            return (T[]) new Object[(int) capacity];
-        }
-        return array;
-    }
-
     /**
-     * The method reflects collection into the string.
-     *
-     * @return the String value
+     * Trim the capacity of the list.
      */
-    public String toString() {
-        return super.toString(this);
+    public void trimToSize() {
+        array = Arrays.copyOf(array, size);
     }
 
     /**
@@ -230,7 +175,7 @@ public class ArrayList<T> extends AbstractList<T> {
      */
     public class MyIterator implements Iterator<T> {
         private int index;
-        private boolean isNextInvoked;
+        private boolean canRemove;
 
         /**
          * The method checks if collection has one more element.
@@ -249,11 +194,11 @@ public class ArrayList<T> extends AbstractList<T> {
          */
         @Override
         public T next() {
-            if (hasNext()) {
-                isNextInvoked = true;
-                return array[index++];
+            if (!hasNext()) {
+                throw new NoSuchElementException("There are no more element in the collection.");
             }
-            throw new NoSuchElementException(HAS_NOT_NEXT_ELEMENT);
+            canRemove = true;
+            return array[index++];
         }
 
         /**
@@ -261,11 +206,11 @@ public class ArrayList<T> extends AbstractList<T> {
          */
         @Override
         public void remove() {
-            if (!isNextInvoked) {
-                throw new IllegalStateException(ITERATOR_INCORRECT);
+            if (!canRemove) {
+                throw new IllegalStateException("Incorrect behavior for the iterator, when called remove() previously next() wasn't called");
             }
             ArrayList.this.remove(--index);
-            isNextInvoked = false;
+            canRemove = false;
         }
     }
 }

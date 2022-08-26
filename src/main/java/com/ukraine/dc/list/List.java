@@ -8,29 +8,47 @@ import java.util.Iterator;
  * @param <T> the data type
  */
 public interface List<T> extends Iterable<T> {
+    // add value to the end of the list
+    void add(T value);
 
-    void add(T data);
+    // [A, B, C, null, null ] size = 3
+    // add (D, [0,1,2,3])
+    // we can add value by index between [0, size]
+    // otherwise throw new IndexOutOfBoundsException
+    void add(T value, int index);
 
-    void add(int index, T data);
+    // we can remove value by index between [0, size - 1]
+    // otherwise throw new IndexOutOfBoundsException
 
+    // [A, B, C] remove = 0
+    // [B (index = 0) , C (index = 1)]
     T remove(int index);
 
+    // [A, B, C] size = 3
+    // we can get value by index between [0, size - 1]
+    // otherwise throw new IndexOutOfBoundsException
     T get(int index);
 
-    T set(int index, T data);
-
-    boolean isEmpty();
-
-    int size();
+    // we can set value by index between [0, size - 1]
+    // otherwise throw new IndexOutOfBoundsException
+    T set(T value, int index);
 
     void clear();
 
-    boolean contains(T data);
+    int size();
 
-    int indexOf(T data);
+    boolean isEmpty();
 
-    int lastIndexOf(T data);
+    boolean contains(T value);
 
+    // [A, B, A, C] indexOf(A) -> 0
+    // -1 if not exist
+    int indexOf(T value);
+
+    // [A, B, A, C] lastIndexOf(A) -> 2
+    int lastIndexOf(T value);
+
+    // [A, B, C]
     String toString();
 
     Iterator<T> iterator();

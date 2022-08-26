@@ -3,9 +3,6 @@ package com.ukraine.dc.list.impl;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import static com.ukraine.dc.util.Constants.HAS_NOT_NEXT_ELEMENT;
-import static com.ukraine.dc.util.Constants.ITERATOR_INCORRECT;
-
 /**
  * The LinkedList implementation.
  *
@@ -16,24 +13,14 @@ public class LinkedList<T> extends AbstractList<T> {
     private Node<T> tail;
 
     /**
-     * The method stands for adding element to the list.
-     *
-     * @param data the data
-     */
-    @Override
-    public void add(T data) {
-        add(size, data);
-    }
-
-    /**
      * The method stands for adding data by index.
      *
      * @param index the index
-     * @param data the data
+     * @param data  the data
      */
     @Override
-    public void add(int index, T data) {
-        validateIndex(index);
+    public void add(T data, int index) {
+        validateIndexOnAdd(index);
         Node<T> value = new Node<>(data);
         if (isEmpty()) {
             head = tail = value;
@@ -46,7 +33,7 @@ public class LinkedList<T> extends AbstractList<T> {
             value.prev = tail;
             tail = value;
         } else {
-            Node<T> dataByIndex = getNodeByIndex(index);
+            Node<T> dataByIndex = getNode(index);
             dataByIndex.prev.next = value;
             value.next = dataByIndex;
             dataByIndex.prev = value;
@@ -63,7 +50,7 @@ public class LinkedList<T> extends AbstractList<T> {
     @Override
     public T remove(int index) {
         validateIndex(index);
-        Node<T> oldValue = getNodeByIndex(index);
+        Node<T> oldValue = getNode(index);
         if (size == 1) {
             head = tail = null;
         } else if (index == size - 1) {
@@ -89,42 +76,22 @@ public class LinkedList<T> extends AbstractList<T> {
     @Override
     public T get(int index) {
         validateIndex(index);
-        return getNodeByIndex(index).value;
+        return getNode(index).value;
     }
 
     /**
      * Sets new data by specified index.
      *
      * @param index the index
-     * @param data the newData
+     * @param data  the newData
      * @return the previousValue
      */
     @Override
-    public T set(int index, T data) {
+    public T set(T data, int index) {
         validateIndex(index);
-        Node<T> oldValue = getNodeByIndex(index);
+        Node<T> oldValue = getNode(index);
         oldValue.value = data;
         return oldValue.value;
-    }
-
-    /**
-     * Checks if collection isEmpty or not.
-     *
-     * @return the boolean value
-     */
-    @Override
-    public boolean isEmpty() {
-        return size == 0;
-    }
-
-    /**
-     * Returns the current size of the collection.
-     *
-     * @return the size
-     */
-    @Override
-    public int size() {
-        return size;
     }
 
     /**
@@ -138,17 +105,6 @@ public class LinkedList<T> extends AbstractList<T> {
     }
 
     /**
-     * Check if collection contains such data inside or not.
-     *
-     * @param data the searchingData
-     * @return the status reflected in boolean value
-     */
-    @Override
-    public boolean contains(T data) {
-        return indexOf(data) != -1;
-    }
-
-    /**
      * Finds the first match from the beginning of the collection.
      *
      * @param data the searchingData
@@ -156,17 +112,20 @@ public class LinkedList<T> extends AbstractList<T> {
      */
     @Override
     public int indexOf(T data) {
+        int currentIndex = 0;
         if (data == null) {
-            for (int i = 0; i < size; i++) {
-                if (get(i) == null) {
-                    return i;
+            for (Node<T> current = head; current != null; current = current.next) {
+                if (current.value == null) {
+                    return currentIndex;
                 }
+                currentIndex++;
             }
         } else {
-            for (int i = 0; i < size; i++) {
-                if (data.equals(get(i))) {
-                    return i;
+            for (Node<T> current = head; current != null; current = current.next) {
+                if (data.equals(current.value)) {
+                    return currentIndex;
                 }
+                currentIndex++;
             }
         }
         return -1;
@@ -180,46 +139,26 @@ public class LinkedList<T> extends AbstractList<T> {
      */
     @Override
     public int lastIndexOf(T data) {
+        int currentIndex = size;
         if (data == null) {
-            for (int i = size - 1; i >= 0; i--) {
-                if (get(i) == null)
-                    return i;
+            for (Node<T> current = tail; current != null; current = current.prev) {
+                currentIndex--;
+                if (current.value == null) {
+                    return currentIndex;
+                }
             }
         } else {
-            for (int i = size - 1; i >= 0; i--) {
-                if (data.equals(get(i))) {
-                    return i;
+            for (Node<T> current = tail; current != null; current = current.prev) {
+                currentIndex--;
+                if (data.equals(current.value)) {
+                    return currentIndex;
                 }
             }
         }
         return -1;
     }
 
-    /**
-     * Reflects data to the string.
-     *
-     * @return the string
-     */
-    public String toString() {
-        return super.toString(this);
-    }
-
-    /**
-     * The node, as an element of the collection.
-     *
-     * @param <T> the data type
-     */
-    private static final class Node<T> {
-        T value;
-        Node<T> prev;
-        Node<T> next;
-
-        private Node(T value) {
-            this.value = value;
-        }
-    }
-
-    private Node<T> getNodeByIndex(int index) {
+    private Node<T> getNode(int index) {
         Node<T> node;
         if (index < size / 2) {
             node = head;
@@ -236,6 +175,21 @@ public class LinkedList<T> extends AbstractList<T> {
     }
 
     /**
+     * The node, as an element of the collection.
+     *
+     * @param <T> the data type
+     */
+    private static final class Node<T> {
+        private T value;
+        private Node<T> prev;
+        private Node<T> next;
+
+        private Node(T value) {
+            this.value = value;
+        }
+    }
+
+    /**
      * Initialize the iterator.
      *
      * @return the Iterator implementation for collection
@@ -249,8 +203,9 @@ public class LinkedList<T> extends AbstractList<T> {
      * The type MyIterator.
      */
     public class MyIterator implements Iterator<T> {
-        private int index;
-        private boolean isNextInvoked;
+        private Node<T> currentNode = head;
+        private Node<T> prevNode = null;
+        private boolean canRemove;
 
         /**
          * Checks if collection has next element or not.
@@ -259,7 +214,7 @@ public class LinkedList<T> extends AbstractList<T> {
          */
         @Override
         public boolean hasNext() {
-            return index < size;
+            return currentNode != null;
         }
 
         /**
@@ -269,11 +224,13 @@ public class LinkedList<T> extends AbstractList<T> {
          */
         @Override
         public T next() {
-            if (hasNext()) {
-                isNextInvoked = true;
-                return get(index++);
+            if (!hasNext()) {
+                throw new NoSuchElementException("There are no more element in the collection.");
             }
-            throw new NoSuchElementException(HAS_NOT_NEXT_ELEMENT);
+            canRemove = true;
+            prevNode = currentNode;
+            currentNode = currentNode.next;
+            return prevNode.value;
         }
 
         /**
@@ -281,11 +238,12 @@ public class LinkedList<T> extends AbstractList<T> {
          */
         @Override
         public void remove() {
-            if (!isNextInvoked) {
-                throw new IllegalStateException(ITERATOR_INCORRECT);
+            if (!canRemove) {
+                throw new IllegalStateException("Incorrect behavior for the iterator, when called remove() previously next() wasn't called");
             }
-            LinkedList.this.remove(index - 1);
-            isNextInvoked = false;
+            canRemove = false;
+            prevNode = null;
+            size--;
         }
     }
 }
