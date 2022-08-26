@@ -3,6 +3,7 @@ package com.ukraine.dc.list.impl;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * The ArrayList.
@@ -106,17 +107,9 @@ public class ArrayList<T> extends AbstractList<T> {
      */
     @Override
     public int indexOf(T data) {
-        if (data == null) {
-            for (int i = 0; i < size; i++) {
-                if (array[i] == null) {
-                    return i;
-                }
-            }
-        } else {
-            for (int i = 0; i < size; i++) {
-                if (data.equals(array[i])) {
-                    return i;
-                }
+        for (int i = 0; i < size; i++) {
+            if (Objects.equals(data, array[i])) {
+                return i;
             }
         }
         return -1;
@@ -130,17 +123,9 @@ public class ArrayList<T> extends AbstractList<T> {
      */
     @Override
     public int lastIndexOf(T data) {
-        if (data == null) {
-            for (int i = size - 1; i > 0; i--) {
-                if (array[i] == null) {
-                    return i;
-                }
-            }
-        } else {
-            for (int i = size - 1; i > 0; i--) {
-                if (data.equals(array[i])) {
-                    return i;
-                }
+        for (int i = size - 1; i > 0; i--) {
+            if (Objects.equals(data, array[i])) {
+                return i;
             }
         }
         return -1;
@@ -148,7 +133,7 @@ public class ArrayList<T> extends AbstractList<T> {
 
     private void expandArray() {
         int newCapacity = array.length * 2;
-        T[] newArray = (T[]) new Object[(int) newCapacity];
+        T[] newArray = (T[]) new Object[newCapacity];
         System.arraycopy(array, 0, newArray, 0, size);
         array = newArray;
     }
