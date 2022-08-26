@@ -2,6 +2,7 @@ package com.ukraine.dc.list.impl;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * The LinkedList implementation.
@@ -113,20 +114,11 @@ public class LinkedList<T> extends AbstractList<T> {
     @Override
     public int indexOf(T data) {
         int currentIndex = 0;
-        if (data == null) {
-            for (Node<T> current = head; current != null; current = current.next) {
-                if (current.value == null) {
-                    return currentIndex;
-                }
-                currentIndex++;
+        for (Node<T> current = head; current != null; current = current.next) {
+            if (Objects.equals(data, current.value)) {
+                return currentIndex;
             }
-        } else {
-            for (Node<T> current = head; current != null; current = current.next) {
-                if (data.equals(current.value)) {
-                    return currentIndex;
-                }
-                currentIndex++;
-            }
+            currentIndex++;
         }
         return -1;
     }
@@ -140,19 +132,10 @@ public class LinkedList<T> extends AbstractList<T> {
     @Override
     public int lastIndexOf(T data) {
         int currentIndex = size;
-        if (data == null) {
-            for (Node<T> current = tail; current != null; current = current.prev) {
-                currentIndex--;
-                if (current.value == null) {
-                    return currentIndex;
-                }
-            }
-        } else {
-            for (Node<T> current = tail; current != null; current = current.prev) {
-                currentIndex--;
-                if (data.equals(current.value)) {
-                    return currentIndex;
-                }
+        for (Node<T> current = tail; current != null; current = current.prev) {
+            currentIndex--;
+            if (Objects.equals(data, current.value)) {
+                return currentIndex;
             }
         }
         return -1;
