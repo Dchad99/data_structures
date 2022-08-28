@@ -43,7 +43,7 @@ public class HashMap<K, V> implements Map<K, V> {
         if (size >= buckets.length * 0.75) {
             buckets = expandBucketsSize();
         }
-        int index = identifyBucketIndex(key);
+        int index = getIndex(key);
         Entry<K, V> entry = buckets[index];
         Entry<K, V> prevEntry = null;
 
@@ -75,7 +75,7 @@ public class HashMap<K, V> implements Map<K, V> {
      */
     @Override
     public V get(K key) {
-        int index = identifyBucketIndex(key);
+        int index = getIndex(key);
         Entry<K, V> entry = buckets[index];
 
         if (!isEmpty()) {
@@ -130,7 +130,7 @@ public class HashMap<K, V> implements Map<K, V> {
      */
     @Override
     public V remove(K key) {
-        int index = identifyBucketIndex(key);
+        int index = getIndex(key);
         Entry<K, V> entry = buckets[index];
         if (!isEmpty() || entry == null) {
             while (entry != null) {
@@ -176,9 +176,24 @@ public class HashMap<K, V> implements Map<K, V> {
      * @param value      the value
      */
     private void innerPut(Entry<K, V>[] newBuckets, K key, V value) {
-        int index = identifyBucketIndex(key);
-        Entry<K, V> entry = new Entry<>(key, value);
-        newBuckets[index] = entry;
+        int bucketIndex = getIndex(key);
+        Entry<K, V> entry = newBuckets[bucketIndex];
+        Entry<K, V> prevEntry = null;
+        Entry<K, V> nextEntry;
+
+        if (entry != null) {
+            while (entry != null) {
+                prevEntry = entry;
+                entry = entry.next;
+            }
+        }
+        if (prevEntry != null) {
+            nextEntry = new Entry<>(key, value);
+            prevEntry.next = nextEntry;
+        } else {
+            entry = new Entry<>(key, value);
+            newBuckets[bucketIndex] = entry;
+        }
     }
 
     /**
@@ -187,7 +202,7 @@ public class HashMap<K, V> implements Map<K, V> {
      * @param key the key
      * @return int value
      */
-    private int identifyBucketIndex(K key) {
+    private int getIndex(K key) {
         return key == null ? 0 : Math.abs(key.hashCode() % buckets.length);
     }
 
