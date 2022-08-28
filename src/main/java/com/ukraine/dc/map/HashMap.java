@@ -43,7 +43,28 @@ public class HashMap<K, V> implements Map<K, V> {
         if (size >= buckets.length * 0.75) {
             buckets = expandBucketsSize();
         }
-        return putValues(buckets, null, key, value);
+        int index = identifyBucketIndex(key);
+        Entry<K, V> entry = buckets[index];
+        Entry<K, V> prevEntry = null;
+
+        while (entry != null) {
+            if (Objects.equals(entry.getKey(), key)) {
+                V prevValue = entry.getValue();
+                entry.setValue(value);
+                return prevValue;
+            }
+            prevEntry = entry;
+            entry = entry.next;
+        }
+        if (prevEntry != null) {
+            prevEntry.next = new Entry<>(key, value);
+            size++;
+            return value;
+        }
+        entry = new Entry<>(key, value);
+        buckets[index] = entry;
+        size++;
+        return value;
     }
 
     /**
@@ -142,7 +163,7 @@ public class HashMap<K, V> implements Map<K, V> {
         var newMap = new Entry[buckets.length * 2];
         while (iterator.hasNext()) {
             var item = iterator.next();
-            putValues(buckets, newMap, item.getKey(), item.getValue());
+            innerPut(newMap, item.getKey(), item.getValue());
         }
         return newMap;
     }
@@ -150,41 +171,14 @@ public class HashMap<K, V> implements Map<K, V> {
     /**
      * The method stands for the enriching collection with new elements.
      *
-     * @param buckets    the buckets
      * @param newBuckets the newBuckets
      * @param key        the key
      * @param value      the value
-     * @return the value
      */
-    private V putValues(Entry<K, V>[] buckets, Entry<K, V>[] newBuckets, K key, V value) {
+    private void innerPut(Entry<K, V>[] newBuckets, K key, V value) {
         int index = identifyBucketIndex(key);
-        Entry<K, V> entry = buckets[index];
-        Entry<K, V> prevEntry = null;
-
-        while (entry != null) {
-            if (Objects.equals(entry.getKey(), key)) {
-                V prevValue = entry.getValue();
-                entry.setValue(value);
-                return prevValue;
-            }
-            prevEntry = entry;
-            entry = entry.next;
-        }
-        if (prevEntry != null) {
-            prevEntry.next = new Entry<>(key, value);
-            size++;
-            return value;
-        }
-        if (newBuckets != null) {
-            entry = new Entry<>(key, value);
-            newBuckets[index] = entry;
-            size++;
-            return value;
-        }
-        entry = new Entry<>(key, value);
-        buckets[index] = entry;
-        size++;
-        return value;
+        Entry<K, V> entry = new Entry<>(key, value);
+        newBuckets[index] = entry;
     }
 
     /**
