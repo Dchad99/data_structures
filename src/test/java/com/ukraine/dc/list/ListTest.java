@@ -1,10 +1,7 @@
 package com.ukraine.dc.list;
 
 import com.ukraine.dc.list.impl.LinkedList;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -18,6 +15,11 @@ abstract class ListTest<T> {
     @BeforeEach
     void setUp() {
         list = getList();
+    }
+
+    @AfterEach
+    void tearDown() {
+        list.clear();
     }
 
     protected abstract List<String> getList();
@@ -42,7 +44,7 @@ abstract class ListTest<T> {
     void shouldAddNewElementOnFirstPositionOfTheList() {
         list.add("1");
         list.add("3");
-        list.add( "2", 0);
+        list.add("2", 0);
         assertEquals(3, list.size());
         assertEquals("2", list.get(0));
         assertEquals("1", list.get(1));
@@ -92,21 +94,10 @@ abstract class ListTest<T> {
     void shouldRemoveElementByIndexMultipleTimesAndDecreasedTheSize() {
         list.add("1");
         assertEquals(1, list.size());
+        assertEquals("[1]", list.toString());
         list.remove(0);
         assertEquals(0, list.size());
-    }
-
-    @Test
-    @DisplayName("Test remove() on collection, then check collection")
-    void shouldRemoveTheLastElementAndDecreasedSize() {
-        list.add("1");
-        list.add("2");
-        list.add("3");
-        assertEquals(3, list.size());
-        list.remove(2);
-        assertEquals(2, list.size());
-        assertEquals("1", list.get(0));
-        assertEquals("2", list.get(1));
+        assertEquals("[]", list.toString());
     }
 
     @Test
@@ -128,6 +119,20 @@ abstract class ListTest<T> {
         assertEquals(2, list.size());
         assertEquals("2", list.get(0));
         assertEquals("3", list.get(1));
+    }
+
+    @Test
+    @DisplayName("Test remove() last element of the collection")
+    void shouldRemoveTheLastElementInCollection() {
+        list.add("1");
+        list.add("2");
+        list.add("3");
+        assertEquals(3, list.size());
+        list.remove(2);
+        assertEquals(2, list.size());
+        assertEquals("1", list.get(0));
+        assertEquals("2", list.get(1));
+        assertEquals("[1, 2]", list.toString());
     }
 
     @Test
@@ -356,4 +361,20 @@ abstract class ListTest<T> {
         iterator.remove();
         assertEquals(0, list.size());
     }
+
+    @Test
+    @DisplayName("Enrich collection with elements, check collection structure then remove all elements.")
+    void shouldReturnEmptyCollection_whenGoThroughTheWholeListAndCallIteratorRemove() {
+        for (int i = 0; i < 5; i++) {
+            list.add(String.valueOf(i));
+        }
+        assertEquals("[0, 1, 2, 3, 4]", list.toString());
+        var iterator = list.iterator();
+        while (iterator.hasNext()) {
+            iterator.next();
+            iterator.remove();
+        }
+        assertEquals("[]", list.toString());
+    }
+
 }
