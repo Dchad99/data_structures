@@ -3,6 +3,7 @@ package com.ukraine.dc.map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * The type HashMap.
@@ -12,6 +13,7 @@ import java.util.Objects;
  */
 public class HashMap<K, V> implements Map<K, V> {
     private static final int DEFAULT_CAPACITY = 16;
+    private static final double LOAD_FACTOR = 0.75;
     private Entry<K, V>[] buckets;
     private int size;
 
@@ -40,7 +42,7 @@ public class HashMap<K, V> implements Map<K, V> {
      */
     @Override
     public V put(K key, V value) {
-        if (size >= buckets.length * 0.75) {
+        if (size >= buckets.length * LOAD_FACTOR) {
             buckets = expandBucketsSize();
         }
         int index = getIndex(key);
@@ -132,13 +134,26 @@ public class HashMap<K, V> implements Map<K, V> {
     public V remove(K key) {
         int index = getIndex(key);
         Entry<K, V> entry = buckets[index];
-        if (!isEmpty() || entry == null) {
+
+        if (!isEmpty()) {
+            if (entry.getKey() == key) {
+                buckets[index] = entry.next;
+                entry.next = null;
+                size--;
+                return entry.getValue();
+            }
+
+            Entry<K, V> prev = entry;
+            entry = entry.next;
+
             while (entry != null) {
-                if (Objects.equals(key, entry.getKey())) {
-                    V removed = entry.getValue();
+                if (entry.getKey() == key) {
                     size--;
-                    return removed;
+                    prev.next = entry.next;
+                    entry.next = null;
+                    return entry.getValue();
                 }
+                prev = entry;
                 entry = entry.next;
             }
         }
@@ -206,6 +221,15 @@ public class HashMap<K, V> implements Map<K, V> {
         return key == null ? 0 : Math.abs(key.hashCode() % buckets.length);
     }
 
+    @Override
+    public String toString() {
+        StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        for (Map.Entry<K, V> entry : this) {
+            joiner.add(entry.toString());
+        }
+        return joiner.toString();
+    }
+
     /**
      * The type Entry.
      *
@@ -239,10 +263,7 @@ public class HashMap<K, V> implements Map<K, V> {
 
         @Override
         public String toString() {
-            return "Entry{" +
-                    "key=" + key +
-                    ", value=" + value +
-                    '}';
+            return key + "=" + value;
         }
     }
 
@@ -260,38 +281,40 @@ public class HashMap<K, V> implements Map<K, V> {
      * The type MapIterator.
      */
     private class MapIterator implements Iterator<Map.Entry<K, V>> {
-        private Entry<K, V> entry;
-        private int index;
-        private boolean isNextInvoked;
+        private int bucketIndex;
+        private Entry<K, V> current;
+        private Entry<K, V> nextElement;
+        private boolean canRemove;
 
         /**
          * The method checks if map has one more element.
          *
-         * @return the boolean value
+         * @return the boolean value.
          */
         @Override
         public boolean hasNext() {
-            while (index != buckets.length && entry == null) {
-                entry = buckets[index];
-                index++;
+            while (bucketIndex < buckets.length && current == null) {
+                current = buckets[bucketIndex];
+                bucketIndex++;
             }
-            return entry != null;
+            return current != null;
         }
 
         /**
-         * The method based on hasNext method result returns data.
+         * The method based on hasNext() return element of the collection.
          *
-         * @return the data type
+         * @return the Entry instance
          */
         @Override
         public Entry<K, V> next() {
             if (!hasNext()) {
                 throw new NoSuchElementException("There are no more element in the collection.");
             }
-            isNextInvoked = true;
-            Entry<K, V> current = entry;
-            entry = current.next;
-            return current;
+            canRemove = true;
+            nextElement = current;
+            var entry = current;
+            current = current.next;
+            return entry;
         }
 
         /**
@@ -299,22 +322,11 @@ public class HashMap<K, V> implements Map<K, V> {
          */
         @Override
         public void remove() {
-            if (!isNextInvoked) {
+            if (!canRemove) {
                 throw new IllegalStateException("Incorrect behavior for the iterator, when called remove() previously next() wasn't called");
             }
-            Entry<K, V> removed = buckets[index - 1];
-            Entry<K, V> prev = null;
-
-            while (removed.next != entry) {
-                prev = entry;
-                removed = removed.next;
-            }
-            if (prev != null) {
-                prev.next = removed.next;
-                return;
-            }
-            buckets[index - 1] = null;
-            size--;
+            HashMap.this.remove(nextElement.getKey());
+            canRemove = false;
         }
     }
 }
