@@ -52,6 +52,7 @@ public class LinkedList<T> extends AbstractList<T> {
     public T remove(int index) {
         validateIndex(index);
         Node<T> oldValue = getNode(index);
+        T res = oldValue.value;
         if (size == 1) {
             head = tail = null;
         } else if (index == size - 1) {
@@ -65,7 +66,7 @@ public class LinkedList<T> extends AbstractList<T> {
             oldValue.next.prev = oldValue.prev;
         }
         size--;
-        return oldValue.value;
+        return res;
     }
 
     /**
@@ -187,7 +188,8 @@ public class LinkedList<T> extends AbstractList<T> {
      */
     public class MyIterator implements Iterator<T> {
         private Node<T> currentNode = head;
-        private Node<T> prevNode = null;
+        private Node<T> previous;
+        private Node<T> nodeBeforePrev;
         private boolean canRemove;
 
         /**
@@ -207,13 +209,15 @@ public class LinkedList<T> extends AbstractList<T> {
          */
         @Override
         public T next() {
-            if (!hasNext()) {
+            if (currentNode == null) {
                 throw new NoSuchElementException("There are no more element in the collection.");
             }
-            canRemove = true;
-            prevNode = currentNode;
+            T prevValue = currentNode.value;
+            nodeBeforePrev = previous;
+            previous = currentNode;
             currentNode = currentNode.next;
-            return prevNode.value;
+            canRemove = false;
+            return prevValue;
         }
 
         /**
@@ -221,12 +225,17 @@ public class LinkedList<T> extends AbstractList<T> {
          */
         @Override
         public void remove() {
-            if (!canRemove) {
+            if (previous == null || canRemove) {
                 throw new IllegalStateException("Incorrect behavior for the iterator, when called remove() previously next() wasn't called");
             }
-            canRemove = false;
-            prevNode = null;
+            if (nodeBeforePrev == null) {
+                head = currentNode;
+            } else {
+                nodeBeforePrev.next = currentNode;
+            }
+            previous = nodeBeforePrev;
             size--;
+            canRemove = true;
         }
     }
 }

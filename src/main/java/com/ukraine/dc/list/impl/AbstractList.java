@@ -1,6 +1,7 @@
 package com.ukraine.dc.list.impl;
 
 import com.ukraine.dc.list.List;
+
 import java.util.StringJoiner;
 
 public abstract class AbstractList<T> implements List<T> {
