@@ -47,23 +47,26 @@ public class HashMap<K, V> implements Map<K, V> {
         }
         int index = getIndex(key);
         Entry<K, V> entry = buckets[index];
+        int hash = hash(key);
         Entry<K, V> prevEntry = null;
 
         while (entry != null) {
-            if (Objects.equals(entry.getKey(), key)) {
-                V prevValue = entry.getValue();
-                entry.setValue(value);
-                return prevValue;
+            if (hash == entry.hash) {
+                if (Objects.equals(entry.getKey(), key)) {
+                    V prevValue = entry.getValue();
+                    entry.setValue(value);
+                    return prevValue;
+                }
             }
             prevEntry = entry;
             entry = entry.next;
         }
         if (prevEntry != null) {
-            prevEntry.next = new Entry<>(key, value);
+            prevEntry.next = new Entry<>(hash(key), key, value);
             size++;
             return value;
         }
-        entry = new Entry<>(key, value);
+        entry = new Entry<>(hash(key), key, value);
         buckets[index] = entry;
         size++;
         return value;
@@ -78,19 +81,21 @@ public class HashMap<K, V> implements Map<K, V> {
     @Override
     public V get(K key) {
         int index = getIndex(key);
+        int hash = hash(key);
         Entry<K, V> entry = buckets[index];
 
         if (!isEmpty()) {
             if (index == 0) {
                 return entry.getValue();
-            } else {
-                for (Map.Entry<K, V> item : this) {
-                    if (key.equals(item.getKey())) {
-                        return item.getValue();
-                    }
+            }
+            while (entry != null) {
+                if (hash == entry.hash && entry.getKey().equals(key)) {
+                    return entry.getValue();
                 }
+                entry = entry.next;
             }
         }
+
         return null;
     }
 
@@ -203,10 +208,10 @@ public class HashMap<K, V> implements Map<K, V> {
             }
         }
         if (prevEntry != null) {
-            nextEntry = new Entry<>(key, value);
+            nextEntry = new Entry<>(hash(key), key, value);
             prevEntry.next = nextEntry;
         } else {
-            entry = new Entry<>(key, value);
+            entry = new Entry<>(hash(key), key, value);
             newBuckets[bucketIndex] = entry;
         }
     }
@@ -239,9 +244,11 @@ public class HashMap<K, V> implements Map<K, V> {
     private static class Entry<K, V> implements Map.Entry<K, V> {
         private final K key;
         private V value;
+        private final int hash;
         private Entry<K, V> next;
 
-        private Entry(K key, V value) {
+        private Entry(int hash, K key, V value) {
+            this.hash = hash;
             this.key = key;
             this.value = value;
             this.next = null;
@@ -262,9 +269,31 @@ public class HashMap<K, V> implements Map<K, V> {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Entry)) return false;
+            Entry<?, ?> entry = (Entry<?, ?>) o;
+            return key.equals(entry.key)
+                    && value.equals(entry.value);
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(key, value);
+        }
+
+        public int getHash() {
+            return hash;
+        }
+
+        @Override
         public String toString() {
             return key + "=" + value;
         }
+    }
+
+    private int hash(Object key) {
+        return key == null ? 0 : key.hashCode();
     }
 
     /**
